@@ -1,0 +1,20 @@
+.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.image-gallery img {
+    width: 150px;
+    height: 100px;
+    margin: 5px;
+}
+
+.canvas-container {
+    position: relative;
+}
+
+#editor-canvas {
+    border: 1px solid #ccc;
+    width: 800px;
+    height: 600px;
+}

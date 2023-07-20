@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo | Image Editor</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* CSS classes for visual feedback during dragging and dropping */
+
+        /* Apply styles to the dragged image */
+        .dragging {
+            opacity: 0.7;
+            /* Reduce opacity during dragging */
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* Apply styles to the dropped image */
+        .dropped {
+            /* You can add any custom styles for the dropped image here */
+        }
+
+        /* Apply styles to the dropzone container when an image is dragged over it */
+        .drop-active {
+            border: 2px dashed #aaa;
+            /* Add a dashed border to indicate the dropzone */
+            transition: border 0.2s ease-in-out;
+        }
+
+        /* Adjust other styles as needed for your specific use case */
+    </style>
+</head>
+
+<body>
+    <div class="image-gallery">
+        <!-- Add your gallery images here -->
+        <img src="./images/image1.jpg" alt="" srcset="" width="250px">
+        <img src="./images/image2.jpg" alt="" srcset="" width="250px">
+        <img src="./images/image3.jpg" alt="" srcset="" width="250px">
+        <img src="./images/image4.jpg" alt="" srcset="" width="250px">
+        <img src="./images/image5.jpg" alt="" srcset="" width="250px">
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="editor-canvas" width="800" height="600"></canvas>
+    </div>
+
+    <button id="export-button">Export Image</button>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"
+    integrity="sha512-CeIsOAsgJnmevfCi2C7Zsyy6bQKi43utIjdA87Q0ZY84oDqnI0uwfM9+bKiIkI75lUeI00WG/+uJzOmuHlesMA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.9.22/interact.min.js"
+    integrity="sha512-JjTq9WftVUiifyzL9+ggVKNUNcPymqK1vPdYZ8IgKTR2Vy9KaB7/b9BYt0293HUFoybsfR+SBDGAvlngXs/2wQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+    integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    // Initialize the canvas
+    const canvas = new fabric.Canvas("editor-canvas");
+
+    // Get the center position of the canvas
+    function getCanvasCenter() {
+        const canvasWidth = canvas.getWidth();
+        const canvasHeight = canvas.getHeight();
+        return {
+            x: canvasWidth / 2,
+            y: canvasHeight / 2,
+        };
+    }
+
+    // Drag and Drop functionality
+    interact(".image-gallery img").draggable({
+        listeners: {
+            start(event) {
+                // Create a reference to the dragged image element
+                event.target.classList.add("dragging");
+            },
+            end(event) {
+                const img = event.target;
+                if (img.classList.contains("dropped")) {
+                    const image = new fabric.Image(img, {
+                        scaleX: 0.5,
+                        scaleY: 0.5,
+                    });
+                    const canvasCenter = getCanvasCenter();
+                    image.set({
+                        left: canvasCenter.x - image.width / 2,
+                        top: canvasCenter.y - image.height / 2,
+                    });
+                    canvas.add(image);
+
+                    // Text editing functionality
+                    const text = new fabric.IText("Editable Text", {
+                        left: 50,
+                        top: 50,
+                    });
+                    canvas.add(text);
+
+                    // Set the text object to be on top of the image visually
+                    canvas.bringToFront(text);
+                }
+                img.classList.remove("dragging", "dropped");
+            },
+        },
+        inertia: true,
+    });
+
+    // Dropzone functionality
+    interact(".canvas-container").dropzone({
+        accept: ".image-gallery img",
+        ondragenter(event) {
+            // Add a class to the dropzone container to highlight it
+            event.target.classList.add("drop-active");
+        },
+        ondragleave(event) {
+            // Remove the highlighting class from the dropzone container
+            event.target.classList.remove("drop-active");
+        },
+        ondrop(event) {
+            // Add a class to the dropped image to identify it as a valid drop
+            event.relatedTarget.classList.add("dropped");
+        },
+    });
+
+    // Export Image
+    const exportButton = document.getElementById("export-button");
+    exportButton.addEventListener("click", () => {
+        html2canvas(canvas.getElement(), {
+            useCORS: true,
+        }).then((canvas) => {
+            const imgData = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.download = "edited_image.png";
+            link.href = imgData;
+            link.click();
+        });
+    });
+</script>
+
+
+
+</html>
